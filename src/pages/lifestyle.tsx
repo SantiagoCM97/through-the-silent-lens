@@ -6,7 +6,7 @@ import HeaderWithMenu from "@/components/HeaderWithMenu";
 export const getStaticProps: GetStaticProps = async () => {
   const bucketName = "through-the-quiet-lens-photos";
   // Optionally, use a prefix if you organize by folder/category
-  const photos = await getPhotosFromGCS(bucketName, "lifestyle/");
+  const photos = await getPhotosFromGCS("lifestyle/");
   return { props: { photos } };
 };
 

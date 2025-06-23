@@ -1,6 +1,6 @@
 import { Storage } from "@google-cloud/storage";
 
-export async function getPhotosFromGCS(bucketName: string, prefix?: string) {
+export async function getPhotosFromGCS(prefix?: string) {
   const storage = new Storage({
     projectId: process.env.GCP_PROJECT_ID,
     credentials: {
@@ -12,13 +12,15 @@ export async function getPhotosFromGCS(bucketName: string, prefix?: string) {
   const options: { prefix?: string } = {};
   if (prefix) options.prefix = prefix;
 
-  const [files] = await storage.bucket(bucketName).getFiles(options);
+  const [files] = await storage
+    .bucket(process.env.GCP_BUCKET_NAME || "through-the-quiet-lens")
+    .getFiles(options);
 
   return files
     .filter((file) => file.name !== options.prefix)
     .map((file) => ({
       id: file.name,
-      url: `https://storage.googleapis.com/${bucketName}/${file.name}`,
+      url: `https://storage.googleapis.com/${process.env.GCP_BUCKET_NAME}/${file.name}`,
       alt: file.name,
     }));
 }

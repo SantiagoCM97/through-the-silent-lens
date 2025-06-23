@@ -2,57 +2,39 @@ import Head from "next/head";
 import Image from "next/image";
 import SideMenu from "@/components/SideMenu";
 import type { NextPage } from "next";
+import { GetStaticProps } from "next";
+import { getSingleImageUrl } from "@/utils/getHeroFromGCS";
+import { getPhotosFromGCS } from "@/utils/getPhotosFromGCS";
 
-// --- Defining a Type for our Gallery Images ---
-type GalleryImage = {
-  id: number;
-  src: string;
+// --- This getStaticProps function is now much cleaner ---
+export const getStaticProps: GetStaticProps = async () => {
+  // We can fetch both the hero image and the gallery photos in parallel
+  // for better performance.
+  const [heroImageUrl, galleryPhotos] = await Promise.all([
+    getSingleImageUrl("Hero.jpg"),
+    getPhotosFromGCS("gallery/"), // Assuming your main page grid uses a 'gallery/' folder
+  ]);
+
+  return {
+    props: {
+      heroImageUrl,
+      photos: galleryPhotos,
+    },
+  };
+};
+// --- Your HomePage component doesn't need to change ---
+// It just receives the props as before.
+interface HomePageProps {
+  heroImageUrl: string;
+  photos: Photo[];
+}
+type Photo = {
+  id: string;
+  url: string;
   alt: string;
-  category: string;
 };
 
-// --- Placeholder Data for Gallery ---
-// Now typed with our GalleryImage type
-const galleryImages: GalleryImage[] = [
-  {
-    id: 1,
-    src: "https://images.pexels.com/photos/931018/pexels-photo-931018.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    alt: "Woman in a hat",
-    category: "People",
-  },
-  {
-    id: 2,
-    src: "https://images.pexels.com/photos/1528640/pexels-photo-1528640.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    alt: "Forest path",
-    category: "Nature",
-  },
-  {
-    id: 3,
-    src: "https://images.pexels.com/photos/66898/elephant-cub-tsavo-kenya-66898.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    alt: "Baby elephant",
-    category: "Animals",
-  },
-  {
-    id: 4,
-    src: "https://images.pexels.com/photos/3807755/pexels-photo-3807755.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    alt: "Friends laughing",
-    category: "Lifestyle",
-  },
-  {
-    id: 5,
-    src: "https://images.pexels.com/photos/3408744/pexels-photo-3408744.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    alt: "Aurora borealis",
-    category: "Nature",
-  },
-  {
-    id: 6,
-    src: "https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    alt: "A happy dog",
-    category: "Animals",
-  },
-];
-
-const HomePage: NextPage = () => {
+const HomePage: NextPage<HomePageProps> = ({ heroImageUrl, photos }) => {
   return (
     <div className="bg-white">
       <Head>
@@ -71,7 +53,7 @@ const HomePage: NextPage = () => {
           className="h-screen bg-cover bg-center bg-fixed flex items-center justify-center relative z-0"
         >
           <Image
-            src="https://images.pexels.com/photos/3225517/pexels-photo-3225517.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+            src={heroImageUrl}
             layout="fill"
             objectFit="cover"
             quality={100}
@@ -119,21 +101,16 @@ const HomePage: NextPage = () => {
         {/* Tiled Gallery Section */}
         <section id="gallery" className="px-4 py-16">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
-            {galleryImages.map((image) => (
-              <div key={image.id} className="group relative overflow-hidden">
+            {photos.map((photo) => (
+              <div key={photo.id} className="group relative overflow-hidden">
                 <Image
-                  src={image.src}
-                  alt={image.alt}
+                  src={photo.url}
+                  alt={photo.alt}
                   width={800}
                   height={600}
                   objectFit="cover"
                   className="transition-transform duration-500 ease-in-out group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <p className="text-white text-2xl font-bold">
-                    {image.category}
-                  </p>
-                </div>
               </div>
             ))}
           </div>
