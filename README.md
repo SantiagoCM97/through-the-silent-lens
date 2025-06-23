@@ -1,6 +1,6 @@
-# Through the Silent Lens
+# Through the Quiet Lens
 
-Welcome to **Through the Silent Lens** — a heartfelt dedication to my beloved wife.
+Welcome to **Through the Quiet Lens** — a heartfelt dedication to my beloved wife.
 
 This project is more than just a website; it is a tribute to her artistry, her vision, and the quiet passion she pours into every photograph. Built as a photography portfolio, this site is designed to be a canvas where she can showcase the full spectrum of her skills, creativity, and unique perspective on the world.
 
@@ -17,8 +17,9 @@ Every image tells a story, and every story deserves to be seen. Through this por
 
 ## A Note of Love
 
-To my wife:  
-May this portfolio be a reflection of your talent and a celebration of your passion. I am endlessly proud of you and grateful to witness the world through your silent lens.
+#### To my wife:
+
+May this portfolio be a reflection of your talent and a celebration of your passion. I am endlessly proud of you and grateful to witness the world through your quiet lens.
 
 ---
 
