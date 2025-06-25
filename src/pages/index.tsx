@@ -88,7 +88,7 @@ const HomePage: NextPage<HomePageProps> = ({ heroImageUrl, photos }) => {
                 About Me
               </h3>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Welcome! I'm Jane, a passionate photographer with a love for
+                Welcome! I'm Natalia, a passionate photographer with a love for
                 capturing the fleeting moments that make life beautiful. From
                 the candid laughter between loved ones to the serene majesty of
                 the natural world, my goal is to create images that tell a story
