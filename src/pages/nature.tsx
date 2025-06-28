@@ -4,6 +4,7 @@ import { GetStaticProps } from "next";
 import { getPhotosFromGCS } from "@/utils/getPhotosFromGCS";
 import HeaderWithMenu from "@/components/HeaderWithMenu";
 import ImageModal from "@/components/ImageModal";
+import ImageUploader from "@/components/ImageUploader";
 
 export const getStaticProps: GetStaticProps = async () => {
   const photos = await getPhotosFromGCS("landscapes/");
@@ -26,6 +27,7 @@ export default function NaturePage({
         caption={modalCaption || "<We need to add a caption>"}
         onClose={() => setModalUrl(null)}
       />
+      <ImageUploader />
     </main>
   );
 }
