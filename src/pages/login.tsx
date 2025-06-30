@@ -1,14 +1,3 @@
-/*
- * =====================================================================================
- *
- * --- FILE 2 of 5 ---
- * Path: /src/app/login/page.tsx
- * Description: This is the new login page. It's a simple form that asks for
- * the password. It's styled to match your site's aesthetic.
- *
- * =====================================================================================
- */
-
 "use client";
 
 import { useState, FormEvent } from "react";

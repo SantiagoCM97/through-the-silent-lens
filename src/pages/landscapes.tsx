@@ -11,7 +11,7 @@ export const getStaticProps: GetStaticProps = async () => {
   return { props: { photos } };
 };
 
-export default function NaturePage({
+export default function LandscapesPage({
   photos,
 }: {
   photos: { id: string; url: string; alt: string }[];
@@ -24,10 +24,9 @@ export default function NaturePage({
       <GalleryGrid photos={photos} onImageClick={setModalUrl} />
       <ImageModal
         imageUrl={modalUrl}
-        caption={modalCaption || "<We need to add a caption>"}
+        caption={modalCaption || ""}
         onClose={() => setModalUrl(null)}
       />
-      <ImageUploader />
     </main>
   );
 }

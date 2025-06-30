@@ -1,13 +1,3 @@
-/*
- * =====================================================================================
- *
- * --- FILE 4 of 5 ---
- * Path: /src/app/api/logout/route.ts (New)
- * Description: This API route handles logging out by clearing the
- * authentication cookie from the user's browser.
- *
- * =====================================================================================
- */
 import { NextResponse as LogoutNextResponse } from "next/server";
 
 export async function POST() {
@@ -25,3 +15,4 @@ export async function POST() {
 
   return response;
 }
+// This will clear the auth_token cookie, effectively logging the user out.

@@ -10,6 +10,8 @@ import {
   X,
   Folder,
   LogOut,
+  MessageSquare,
+  Star,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -18,59 +20,114 @@ const FOLDER_CATEGORIES = ["animals", "lifestyle", "people", "landscapes"];
 
 interface UploadedFile {
   file: File;
-  status: "pending" | "uploading" | "success" | "error";
+  status: "pending" | "uploading" | "saving" | "success" | "error";
   progress: number;
+  caption: string;
+  rating: number;
   errorMessage?: string;
   id: string;
 }
 
 // --- React Frontend Component ---
-
 const FileStatus: FC<{
   uploadedFile: UploadedFile;
   onRemove: (id: string) => void;
-}> = ({ uploadedFile, onRemove }) => {
+  onMetadataChange: (
+    id: string,
+    field: "caption" | "rating",
+    value: string | number
+  ) => void;
+  isUploading: boolean;
+}> = ({ uploadedFile, onRemove, onMetadataChange, isUploading }) => {
   const isActionable =
     uploadedFile.status === "pending" || uploadedFile.status === "error";
 
   return (
-    <li className="flex items-center space-x-4 p-3 bg-gray-800/50 rounded-lg border border-gray-700">
-      <div className="flex-shrink-0">
-        {uploadedFile.status === "success" ? (
-          <CheckCircle2 className="h-6 w-6 text-green-400" />
-        ) : uploadedFile.status === "error" ? (
-          <AlertCircle className="h-6 w-6 text-red-400" />
-        ) : (
-          <FileIcon className="h-6 w-6 text-gray-500" />
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-200 truncate">
-          {uploadedFile.file.name}
-        </p>
-        <div className="text-xs text-gray-400">
-          {uploadedFile.status === "error" ? (
-            <span className="text-red-400">{uploadedFile.errorMessage}</span>
+    <li className="flex flex-col space-y-3 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+      <div className="flex items-center space-x-4">
+        <div className="flex-shrink-0">
+          {uploadedFile.status === "success" ? (
+            <CheckCircle2 className="h-6 w-6 text-green-400" />
+          ) : uploadedFile.status === "error" ? (
+            <AlertCircle className="h-6 w-6 text-red-400" />
           ) : (
-            `${(uploadedFile.file.size / 1024 / 1024).toFixed(2)} MB`
+            <FileIcon className="h-6 w-6 text-gray-500" />
           )}
         </div>
-        {uploadedFile.status === "uploading" && (
-          <div className="w-full bg-gray-700 rounded-full h-1.5 mt-1">
-            <div
-              className="bg-teal-500 h-1.5 rounded-full"
-              style={{ width: `${uploadedFile.progress}%` }}
-            ></div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-gray-200 truncate">
+            {uploadedFile.file.name}
+          </p>
+          <div className="text-xs text-gray-400">
+            {uploadedFile.status === "error" ? (
+              <span className="text-red-400">{uploadedFile.errorMessage}</span>
+            ) : uploadedFile.status === "saving" ? (
+              "Saving metadata..."
+            ) : (
+              `${(uploadedFile.file.size / 1024 / 1024).toFixed(2)} MB`
+            )}
           </div>
+          {(uploadedFile.status === "uploading" ||
+            uploadedFile.status === "saving") && (
+            <div className="w-full bg-gray-700 rounded-full h-1.5 mt-1">
+              <div
+                className="bg-teal-500 h-1.5 rounded-full transition-all duration-300"
+                style={{
+                  width: `${
+                    uploadedFile.status === "saving"
+                      ? 100
+                      : uploadedFile.progress
+                  }%`,
+                }}
+              ></div>
+            </div>
+          )}
+        </div>
+        {isActionable && (
+          <button
+            onClick={() => onRemove(uploadedFile.id)}
+            className="p-1 rounded-full text-gray-500 hover:bg-gray-700 hover:text-gray-300 transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
         )}
       </div>
-      {isActionable && (
-        <button
-          onClick={() => onRemove(uploadedFile.id)}
-          className="p-1 rounded-full text-gray-500 hover:bg-gray-700 hover:text-gray-300 transition-colors"
-        >
-          <X className="h-4 w-4" />
-        </button>
+      {uploadedFile.status !== "success" && (
+        <div className="flex items-center space-x-4 pl-10">
+          <div className="relative flex-grow">
+            <MessageSquare className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Add a caption..."
+              value={uploadedFile.caption}
+              onChange={(e) =>
+                onMetadataChange(uploadedFile.id, "caption", e.target.value)
+              }
+              disabled={isUploading}
+              className="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-teal-500 focus:border-teal-500 block w-full pl-9 p-2"
+            />
+          </div>
+          <div className="relative w-28">
+            <Star className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+            <input
+              type="number"
+              placeholder="Rating"
+              step="0.1"
+              min="0.1"
+              max="9.9"
+              value={uploadedFile.rating === 0 ? "" : uploadedFile.rating}
+              onChange={(e) =>
+                onMetadataChange(
+                  uploadedFile.id,
+                  "rating",
+                  parseFloat(e.target.value) || 0
+                )
+              }
+              disabled={isUploading}
+              className="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-teal-500 focus:border-teal-500 block w-full pl-9 p-2"
+            />
+          </div>
+        </div>
       )}
     </li>
   );
@@ -84,12 +141,22 @@ export default function UploadPage() {
 
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
-    router.push("/login"); // Redirect to login page after logout
+    router.push("/login");
   };
 
   const removeFile = (id: string) => {
     if (isUploading) return;
     setUploadedFiles((prev) => prev.filter((file) => file.id !== id));
+  };
+
+  const handleMetadataChange = (
+    id: string,
+    field: "caption" | "rating",
+    value: string | number
+  ) => {
+    setUploadedFiles((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, [field]: value } : f))
+    );
   };
 
   const uploadFile = async (fileToUpload: UploadedFile) => {
@@ -99,7 +166,8 @@ export default function UploadPage() {
       )
     );
     try {
-      const res = await fetch("/api/upload", {
+      // 1. Get Signed URL from our backend
+      const signedUrlRes = await fetch("/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -108,17 +176,14 @@ export default function UploadPage() {
           folderName: selectedFolder,
         }),
       });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to get signed URL.");
-      }
-      const { url } = await res.json();
-      if (!url)
-        throw new Error("The signed URL was not returned from the API.");
+      if (!signedUrlRes.ok) throw new Error("Failed to get signed URL.");
+      const { url: signedUrl } = await signedUrlRes.json();
+      if (!signedUrl) throw new Error("The signed URL was not returned.");
 
+      // 2. Upload the file to GCP Storage using the signed URL
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open("PUT", url, true);
+        xhr.open("PUT", signedUrl, true);
         xhr.setRequestHeader("Content-Type", fileToUpload.file.type);
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable) {
@@ -132,26 +197,39 @@ export default function UploadPage() {
             );
           }
         };
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            setUploadedFiles((prev) =>
-              prev.map((f) =>
-                f.id === fileToUpload.id
-                  ? { ...f, status: "success", progress: 100 }
-                  : f
-              )
-            );
-            resolve();
-          } else {
-            reject(new Error(`Upload failed (Status: ${xhr.status})`));
-          }
-        };
-        xhr.onerror = () =>
-          reject(
-            new Error("Network error. Check CORS settings on your bucket.")
-          );
+        xhr.onload = () =>
+          xhr.status >= 200 && xhr.status < 300
+            ? resolve()
+            : reject(new Error("Upload failed."));
+        xhr.onerror = () => reject(new Error("Network error during upload."));
         xhr.send(fileToUpload.file);
       });
+
+      // 3. Save metadata to Firestore
+      setUploadedFiles((prev) =>
+        prev.map((f) =>
+          f.id === fileToUpload.id ? { ...f, status: "saving" } : f
+        )
+      );
+      const publicUrl = `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_GCP_BUCKET_NAME}/${selectedFolder}/${fileToUpload.file.name}`;
+      const metadataRes = await fetch("/api/save-metadata", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageUrl: publicUrl,
+          fileName: fileToUpload.file.name,
+          caption: fileToUpload.caption,
+          category: selectedFolder,
+          rating: fileToUpload.rating,
+        }),
+      });
+      if (!metadataRes.ok) throw new Error("Failed to save metadata.");
+
+      setUploadedFiles((prev) =>
+        prev.map((f) =>
+          f.id === fileToUpload.id ? { ...f, status: "success" } : f
+        )
+      );
     } catch (error: any) {
       setUploadedFiles((prev) =>
         prev.map((f) =>
@@ -176,6 +254,8 @@ export default function UploadPage() {
       file,
       status: "pending",
       progress: 0,
+      caption: "",
+      rating: 0,
       id: `${file.name}-${file.lastModified}-${Math.random()}`,
     }));
     setUploadedFiles((prev) => [...prev, ...newFiles]);
@@ -210,6 +290,7 @@ export default function UploadPage() {
       </header>
 
       <div className="max-w-3xl mx-auto">
+        {/* Folder Selection */}
         <div className="mb-8">
           <label
             htmlFor="folder-select"
@@ -222,9 +303,7 @@ export default function UploadPage() {
             <select
               id="folder-select"
               value={selectedFolder}
-              onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                setSelectedFolder(e.target.value)
-              }
+              onChange={(e) => setSelectedFolder(e.target.value)}
               disabled={isUploading}
               className="block w-full pl-10 pr-4 py-2.5 bg-gray-800/50 border border-gray-600 rounded-lg focus:ring-teal-500 focus:border-teal-500 text-white transition"
             >
@@ -240,15 +319,16 @@ export default function UploadPage() {
           </div>
         </div>
 
+        {/* Dropzone */}
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors duration-300
-                    ${!selectedFolder ? "opacity-50 cursor-not-allowed" : ""}
-                    ${
-                      isDragActive
-                        ? "border-teal-500 bg-gray-800/60"
-                        : "border-gray-600 hover:border-teal-600"
-                    }`}
+          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors duration-300 ${
+            !selectedFolder ? "opacity-50 cursor-not-allowed" : ""
+          } ${
+            isDragActive
+              ? "border-teal-500 bg-gray-800/60"
+              : "border-gray-600 hover:border-teal-600"
+          }`}
         >
           <input {...getInputProps()} />
           <div className="flex flex-col items-center justify-center space-y-4 text-gray-400">
@@ -264,24 +344,27 @@ export default function UploadPage() {
             ) : (
               <div>
                 <p className="text-lg font-semibold text-gray-300">
-                  2. Drag & drop photos, or click to select
+                  2. Add photos, captions, and ratings
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
-                  Supports high-resolution JPEG, PNG, GIF, WEBP
+                  Drag & drop or click to select files
                 </p>
               </div>
             )}
           </div>
         </div>
 
+        {/* File List & Upload Button */}
         {uploadedFiles.length > 0 && (
           <div className="mt-10">
-            <ul className="space-y-3">
+            <ul className="space-y-4">
               {uploadedFiles.map((uf) => (
                 <FileStatus
                   key={uf.id}
                   uploadedFile={uf}
                   onRemove={removeFile}
+                  onMetadataChange={handleMetadataChange}
+                  isUploading={isUploading}
                 />
               ))}
             </ul>
@@ -306,5 +389,3 @@ export default function UploadPage() {
     </main>
   );
 }
-// This code is a complete React component for an upload page that allows users to select a folder, drag and drop files, and upload them to a server. It includes error handling, progress tracking, and a logout button.
-// The component uses the `useDropzone` hook for drag-and-drop functionality and manages the state of uploaded files, including their status and progress. It also provides a user-friendly interface with icons and feedback messages.

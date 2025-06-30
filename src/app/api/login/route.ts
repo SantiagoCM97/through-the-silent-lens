@@ -1,15 +1,3 @@
-/*
- * =====================================================================================
- *
- * --- FILE 3 of 5 ---
- * Path: /src/app/api/login/route.ts (Corrected)
- * Description: The secure backend API route that verifies the password. If it
- * matches the one in your environment variables, it creates a secure,
- * HttpOnly cookie to authenticate the user.
- *
- * =====================================================================================
- */
-
 import { NextResponse } from "next/server";
 import { SignJWT } from "jose";
 
